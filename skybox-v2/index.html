@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title> SkyBox </title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <button onclick="goHome()"> Home Page </button>
+    <script src="../three.min.js"></script>
+    <script src="../OrbitControls.js"></script>
+    <script>
+        var scene, camera, renderer, sphereCamera;
+
+        function goHome(){
+            window.location.pathname = "";
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 45, 5000);
+            camera.position.set(0, 400, 1000);
+
+            renderer = new THREE.WebGLRenderer({antialias: true});
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            let controls = new THREE.OrbitControls(camera, renderer.domElement);
+            //controls.addEventListener('change', () => {});
+            controls.enableZoom = false;
+
+            let urls = [
+                './basilica/posx.jpg', './basilica/negx.jpg',
+                './basilica/posy.jpg', './basilica/negy.jpg', 
+                './basilica/posz.jpg', './basilica/negz.jpg', 
+            ]
+
+            let loader = new THREE.CubeTextureLoader();
+            scene.background = loader.load(urls);
+
+            sphereCamera = new THREE.CubeCamera(1, 1000, 500);
+            sphereCamera.position.set(0, 100, 0);
+            scene.add(sphereCamera);
+
+            let sphereMaterial = new THREE.MeshBasicMaterial({
+                envMap: sphereCamera.renderTarget.texture
+            });
+
+            let sphereGeo = new THREE.SphereGeometry(350, 50, 50);
+            let sphere = new THREE.Mesh(sphereGeo, sphereMaterial);
+            sphere.position.set(0, 100, 0);
+            scene.add(sphere);
+
+            animate();
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        function animate(){
+            render();
+            sphereCamera.update(renderer, scene)
+            requestAnimationFrame(animate);
+        }
+
+        init();
+    </script>
+</body>
+</html>

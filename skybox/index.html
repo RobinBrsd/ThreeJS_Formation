@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title> SkyBox </title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <button onclick="swap()"> SWAP SCENE </button>
+    <script src="../three.min.js"></script>
+    <script src="../OrbitControls.js"></script>
+    <script>
+        var scene, camera, renderer;
+
+        this.click = true;
+        this.skybox;
+        function init() {
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 45, 30000);
+            camera.position.set(-900, -200, -900);
+
+            renderer = new THREE.WebGLRenderer({antialias: true});
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            let controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.addEventListener('change', () => {});
+            controls.minDistance = 500;
+            controls.maxDistance = 1500;
+
+            swap();
+            animate();
+        }
+
+        function swap() {
+            this.click = !this.click;
+            
+            var materialArray = [];
+            if(click) {
+                let texture_ft = new THREE.TextureLoader().load('./zeus/zeus_ft.jpg');
+                let texture_bk = new THREE.TextureLoader().load('./zeus/zeus_bk.jpg');
+                let texture_up = new THREE.TextureLoader().load('./zeus/zeus_up.jpg');
+                let texture_dn = new THREE.TextureLoader().load('./zeus/zeus_dn.jpg');
+                let texture_rt = new THREE.TextureLoader().load('./zeus/zeus_rt.jpg');
+                let texture_lf = new THREE.TextureLoader().load('./zeus/zeus_lf.jpg');
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_ft}));
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_bk}));
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_up}));
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_dn}));
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_rt}));
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_lf}));
+            } else {
+                let texture_ft = new THREE.TextureLoader().load('./humble/humble_ft.jpg');
+                let texture_bk = new THREE.TextureLoader().load('./humble/humble_bk.jpg');
+                let texture_up = new THREE.TextureLoader().load('./humble/humble_up.jpg');
+                let texture_dn = new THREE.TextureLoader().load('./humble/humble_dn.jpg');
+                let texture_rt = new THREE.TextureLoader().load('./humble/humble_rt.jpg');
+                let texture_lf = new THREE.TextureLoader().load('./humble/humble_lf.jpg');
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_ft}));
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_bk}));
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_up}));
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_dn}));
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_rt}));
+                materialArray.push(new THREE.MeshBasicMaterial({map: texture_lf}));
+            }
+
+            for(let i = 0; i < 6; i++){
+                materialArray[i].side = THREE.BackSide;
+            }
+
+            let skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
+            this.skybox = new THREE.Mesh(skyboxGeo, materialArray);
+
+            if(this.click)
+                scene.remove(this.skybox);
+            scene.add(this.skybox);
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        function animate(){
+            render();
+            requestAnimationFrame(animate);
+        }
+
+        init();
+    </script>
+</body>
+</html>

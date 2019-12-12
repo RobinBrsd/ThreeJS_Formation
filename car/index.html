@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title> Car </title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <button onclick="swap()"> Swap Model </button>
+    <p id="loader"> Loading ... </p>
+    
+    <script src="../three.min.js"></script>
+    <script src="../GLTFLoader.js"></script>
+    <script src="../OrbitControls.js"></script>
+    <script>
+        var scene, camera, renderer, controls, currentModel;
+
+        this.model = './main_car/scene.gltf';
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xdddddd);
+
+            camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 5000);
+            camera.rotation.y = 45/180*Math.PI;
+            camera.position.x = 800;
+            camera.position.y = 100;
+            camera.position.z = 1000;
+
+            light = new THREE.AmbientLight(0x404040, 100);
+            scene.add(light);
+
+            directionalLight = new THREE.DirectionalLight(0xffffff, 100);
+            directionalLight.position.set(0,1,0);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+
+            plight = new THREE.PointLight(0xc4c4c4, 10);
+            plight.position.set(0,300,500);
+            scene.add(plight);
+
+            plight2 = new THREE.PointLight(0xc4c4c4, 10);
+            plight2.position.set(500,100,0);
+            scene.add(plight2);
+
+            plight3 = new THREE.PointLight(0xc4c4c4, 10);
+            plight3.position.set(0,100,-500);
+            scene.add(plight3);
+
+            plight4 = new THREE.PointLight(0xc4c4c4, 10);
+            plight4.position.set(-500,300,0);
+            scene.add(plight4);
+
+            renderer = new THREE.WebGLRenderer({antialias:true});
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.addEventListener('change', () =>{});
+            controls.minDistance = 300;
+            controls.maxDistance = 4000;
+            controls.maxPolarAngle = Math.PI/2; 
+            controls.update();
+
+            loadModel();
+            animate();
+        }
+
+        function loadModel(){
+            if(currentModel){
+                scene.remove(currentModel);
+            }
+            let loader = new THREE.GLTFLoader();
+            let bar = document.getElementById("loader");
+            loader.load(this.model, function(gltf){
+                car = gltf.scene.children[0];
+                currentModel = gltf.scene.children[0];
+                car.scale.set(0.5,0.5,0.5);
+                scene.add(currentModel);
+                bar.style.visibility = "hidden";
+            }, function ( xhr ) {
+                bar.style.visibility = "visible";
+                console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+            })
+        }
+
+        function swap() {
+            if(this.model === './car_c/scene.gltf')
+                this.model = './main_car/scene.gltf'
+            else {
+                this.model = './car_c/scene.gltf'
+            }
+            loadModel();
+        }
+
+        function animate() {
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        init();
+    </script>
+</body>
+</html>

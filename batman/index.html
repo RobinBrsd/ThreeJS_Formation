@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title> Batman </title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <button onclick="goHome()"> Home Page </button>
+    <script src="../three.min.js"></script>
+    <script src="../GLTFLoader.js"></script>
+    <script src="../OrbitControls.js"></script>
+    <script src="../postprocessing.min.js"></script>
+
+    <script>
+        var scene, camera, renderer, controls, composer;
+        function goHome(){
+            window.location.pathname = "";
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020202);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 50000);
+            camera.position.y = 5;
+            camera.position.z = 10;
+
+            directionalLight = new THREE.DirectionalLight(0xffccaa, 3);
+            directionalLight.position.set(0,0,-1);
+            scene.add(directionalLight);
+
+            renderer = new THREE.WebGLRenderer({antialias:true});
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.addEventListener('change', () =>{});
+
+            let circleGeo = new THREE.CircleGeometry(4.5, 100);
+            let circleMat = new THREE.MeshBasicMaterial({color: 0xffccaa});
+            let circle = new THREE.Mesh(circleGeo, circleMat);
+            circle.position.set(0,0.4,-10);
+            circle.scale.setX(1.1);
+            scene.add(circle);
+
+            let godraysEffect = new POSTPROCESSING.GodRaysEffect(camera, circle, {
+                resolutionScale: 1,
+                density: 0.6,
+                decay: 0.95,
+                weight: 0.9,
+                samples:100,
+            });
+
+            let renderPass = new POSTPROCESSING.RenderPass(scene, camera);
+            let effectPass = new POSTPROCESSING.EffectPass(camera, godraysEffect);
+            effectPass.renderToScreen = true;
+
+            composer = new POSTPROCESSING.EffectComposer(renderer);
+            composer.addPass(renderPass);
+            composer.addPass(effectPass);
+
+            loadModel();
+            animate();
+        }
+
+        function loadModel(){
+            let loader = new THREE.GLTFLoader();
+            loader.load('./logo/scene.gltf', function(gltf){
+                logo = gltf.scene.children[0];
+                logo.position.x = 1.5;
+                scene.add(logo);
+            }, function ( xhr ) {
+                console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+            })
+        }
+
+        function animate() {
+            //renderer.render(scene, camera);
+            composer.render(0.1);
+            requestAnimationFrame(animate);
+        }
+
+        init();
+    </script>
+</body>
+</html>

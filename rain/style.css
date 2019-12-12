@@ -1,0 +1,15 @@
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    background: black;
+    overflow: hidden;
+}
+
+button {
+    position: absolute;
+    right: 0;
+    padding: 10px 30px;
+    text-transform: uppercase;
+    font-weight: bold;;
+}
