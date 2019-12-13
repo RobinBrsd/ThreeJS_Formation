@@ -8,12 +8,37 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <button id="light" onclick="toogleLight()"> Light On ! </button>
+    <p class="tips"> Tips : Find the light ! </p>
     <h1 id="loader"> Loading ... </h1>
+
+    <div class="touch">
+        <p> BB-8 : </p>
+        <span> A </span>
+        <span> W </span>
+        <span> S </span>
+        <span> D </span>
+    </div>
+
+    <p class="toogle" onclick="displayProject()"> Project </p>
+
+    <div class="menu">
+        <a href="/basics_one/"> Basics_One </a>
+        <a href="/basics_two/"> Basics_Two </a>
+        <a href="/portal/"> Portal </a>
+        <a href="/skybox/"> Skybox </a>
+        <a href="/space/"> Space </a>
+        <a href="/skybox-v2/"> Skybox v2 </a>
+        <a href="/rain/"> Rain </a>
+        <a href="/batman/"> Batman </a>
+        <a href="/car"> Car </a>
+    </div>
+
     <script src="three.min.js"></script>
     <script src="OrbitControls.js"></script>
+    <script src="GLTFLoader.js"></script>
     <script>
         var scene, camera, renderer, mouse, raycaster;
+        var bb8;
 
         this.click = false;
         this.light;
@@ -21,13 +46,16 @@
         this.plight2;
         this.plight3;
         this.plight4;
-                
+
+        this.lastY = 0;
+        this.lastKey = "";
+        
         function init(){
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
 
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.x = -500;
+            camera.position.x = -700;
 
             renderer = new THREE.WebGLRenderer();
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -48,18 +76,12 @@
                 camera.updateProjectionMatrix();
             })
 
-            
             let controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableZoom = false;
             controls.maxDistance = 300;
             controls.maxPolarAngle = Math.PI/2; 
-            controls.keys = {
-                LEFT: 37, //left arrow
-                UP: 38, // up arrow
-                RIGHT: 39, // right arrow
-                BOTTOM: 40 // down arrow
-            }
             controls.keyPanSpeed = 40;
+            controls.rotateSpeed = 0.3;
             controls.update();
 
             this.light = new THREE.AmbientLight(0x404040, 0.5);
@@ -67,16 +89,38 @@
 
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
-            window.addEventListener('mousedown', onMouseMove);
 
-            let geo = new THREE.PlaneBufferGeometry(20000, 20000, 0, 0);
-            let mat = new THREE.MeshMatcapMaterial({ color: 0x0d0d0d, side: THREE.DoubleSide });
-            let plane = new THREE.Mesh(geo, mat);
-            plane.name = "plane";
-            scene.add(plane);
-            plane.rotateX( - Math.PI / 2);
-            plane.position.y = -151;
+            window.addEventListener('mousedown', onMouseClick);
+            window.addEventListener('keypress', onKeyPress);
 
+            let loader = new THREE.GLTFLoader();
+            loader.load('./model-3d/floor/scene.gltf', function(gltf){
+                floor = gltf.scene.children[0];
+                floor.scale.set(1000,1000,1000);
+                floor.name = "plane";
+                floor.position.y = -175;
+                scene.add(floor);
+            });
+
+            loader.load('./model-3d/bb8/scene.gltf', function(gltf){
+                bb8 = gltf.scene.children[0];
+                bb8.scale.set(0.5,0.5,0.5);
+                bb8.name = "bb8";
+                bb8.position.y = -120;
+                bb8.rotateZ(4.7);
+                scene.add(bb8);
+            });
+
+            loader.load('./model-3d/light/scene.gltf', function(gltf){
+                lightModel = gltf.scene.children[0];
+                lightModel.scale.set(1.5,1.5,1.5);
+                lightModel.name = "lightModel";
+                lightModel.position.y = -120;
+                lightModel.position.z = -350;
+                lightModel.position.x = -500;
+                scene.add(lightModel);
+            });
+        
             generateText();
             animate();
         }
@@ -96,42 +140,37 @@
             
             // project 1
             var loader = new THREE.FontLoader();
-            let text = `PROJECT : 
+            let text = `  PROJECT : 
 Basics One`;
 
-            loader.load( './Blueberry Regular_Regular.json', function (font) {
+            loader.load( './SquareFont_Regular.json', function (font) {
                 var textGeom = new THREE.TextGeometry(text, {
                     font: font,
-                    size: 50,
-                    height: 5,
-                    bevelEnabled: true,
+                    size: 70,
                 });
 
                 var textMesh = new THREE.Mesh(textGeom, textMaterial[0]);
                 textMesh.rotation.y = -0.8;
-                textMesh.position.z = -500;
+                textMesh.position.z = -700;
                 textMesh.position.x = 200;
                 textMesh.name = "basics_one";
                 scene.add(textMesh);
             });
 
-                        
             // project 2
             var loader = new THREE.FontLoader();
-            let text2 = `PROJECT :
+            let text2 = `  PROJECT :
 Basics Two`;
-            loader.load( './Blueberry Regular_Regular.json', function (font) {
+            loader.load( './SquareFont_Regular.json', function (font) {
                 var textGeom = new THREE.TextGeometry(text2, {
                     font: font,
-                    size: 50,
-                    height: 5,
-                    bevelEnabled: true,
+                    size: 70,
                 });
 
                 var textMesh = new THREE.Mesh(textGeom, textMaterial[1]);
                 textMesh.rotation.y = 4;
                 textMesh.position.z = 100;
-                textMesh.position.x = 500;
+                textMesh.position.x = 700;
                 textMesh.name = "basics_two";
                 scene.add(textMesh);
             });
@@ -139,19 +178,17 @@ Basics Two`;
             // project 3
             var loader = new THREE.FontLoader();
             let text3 = `PROJECT :
-    Portal`;
-            loader.load( './Blueberry Regular_Regular.json', function (font) {
+  Portal`;
+            loader.load( './SquareFont_Regular.json', function (font) {
                 var textGeom = new THREE.TextGeometry(text3, {
                     font: font,
-                    size: 50,
-                    height: 5,
-                    bevelEnabled: true,
+                    size: 70,
                 });
 
                 var textMesh = new THREE.Mesh(textGeom, textMaterial[2]);
                 textMesh.rotation.y = -1.5;
-                textMesh.position.z = -260;
-                textMesh.position.x = 450;
+                textMesh.position.z = -320;
+                textMesh.position.x = 470;
                 textMesh.position.y = 250;
                 textMesh.name = "portal";
                 scene.add(textMesh);
@@ -161,18 +198,16 @@ Basics Two`;
             var loader = new THREE.FontLoader();
             let text4 = `PROJECT :
      Car`;
-            loader.load( './Blueberry Regular_Regular.json', function (font) {
+            loader.load( './SquareFont_Regular.json', function (font) {
                 var textGeom = new THREE.TextGeometry(text4, {
                     font: font,
-                    size: 50,
-                    height: 5,
-                    bevelEnabled: true,
+                    size: 70,
                 });
 
                 var textMesh = new THREE.Mesh(textGeom, textMaterial[3]);
                 textMesh.rotation.y = -2.9;
                 textMesh.position.z = 380;
-                textMesh.position.x = 250;
+                textMesh.position.x = 340;
                 textMesh.position.y = 250;
                 textMesh.name = "car";
                 scene.add(textMesh);
@@ -180,14 +215,12 @@ Basics Two`;
             
             // project 5
             var loader = new THREE.FontLoader();
-            let text5 = `PROJECT :
-  Batman`;
-            loader.load( './Blueberry Regular_Regular.json', function (font) {
+            let text5 = `PROJECT : 
+ Batman`;
+            loader.load( './SquareFont_Regular.json', function (font) {
                 var textGeom = new THREE.TextGeometry(text5, {
                     font: font,
-                    size: 50,
-                    height: 5,
-                    bevelEnabled: true,
+                    size: 70,
                 });
 
                 var textMesh = new THREE.Mesh(textGeom, textMaterial[4]);
@@ -201,19 +234,17 @@ Basics Two`;
             // project 6
             var loader = new THREE.FontLoader();
             let text6 = `PROJECT :
-     Rain`;
-            loader.load( './Blueberry Regular_Regular.json', function (font) {
+    Rain`;
+            loader.load( './SquareFont_Regular.json', function (font) {
                 var textGeom = new THREE.TextGeometry(text6, {
                     font: font,
-                    size: 50,
-                    height: 5,
-                    bevelEnabled: true,
+                    size: 70,
                 });
 
                 var textMesh = new THREE.Mesh(textGeom, textMaterial[5]);
                 textMesh.rotation.y = -3.9;
-                textMesh.position.z = 350;
-                textMesh.position.x = -350;
+                textMesh.position.z = 370;
+                textMesh.position.x = -370;
                 textMesh.position.y = 250;
                 textMesh.name = "rain";
                 scene.add(textMesh);
@@ -222,19 +253,17 @@ Basics Two`;
             // project 7
             var loader = new THREE.FontLoader();
             let text7 = `PROJECT :
-    Skybox`;
-            loader.load( './Blueberry Regular_Regular.json', function (font) {
+ Skybox`;
+            loader.load( './SquareFont_Regular.json', function (font) {
                 var textGeom = new THREE.TextGeometry(text7, {
                     font: font,
-                    size: 50,
-                    height: 5,
-                    bevelEnabled: true,
+                    size: 70,
                 });
 
                 var textMesh = new THREE.Mesh(textGeom, textMaterial[6]);
                 textMesh.rotation.y = -0.1;
-                textMesh.position.z = -500;
-                textMesh.position.x = -190;
+                textMesh.position.z = -700;
+                textMesh.position.x = -130;
                 textMesh.position.y = 250;
                 textMesh.name = "skybox";
                 scene.add(textMesh);
@@ -243,48 +272,41 @@ Basics Two`;
             // project 8
             var loader = new THREE.FontLoader();
             let text8 = `PROJECT :
-    Space`;
-            loader.load( './Blueberry Regular_Regular.json', function (font) {
+  Space`;
+            loader.load( './SquareFont_Regular.json', function (font) {
                 var textGeom = new THREE.TextGeometry(text8, {
                     font: font,
-                    size: 50,
-                    height: 5,
-                    bevelEnabled: true,
+                    size: 70,
                 });
 
                 var textMesh = new THREE.Mesh(textGeom, textMaterial[7]);
                 textMesh.rotation.y = 0.5;
                 textMesh.position.z = -400;
-                textMesh.position.x = -450;
+                textMesh.position.x = -470;
                 textMesh.name = "space";
                 scene.add(textMesh);
             });
 
             // project 9
             var loader = new THREE.FontLoader();
-            let text9 = `PROJECT :
+            let text9 = `  PROJECT :
 Skybox v2`;
-            loader.load( './Blueberry Regular_Regular.json', function (font) {
+            loader.load( './SquareFont_Regular.json', function (font) {
                 var textGeom = new THREE.TextGeometry(text9, {
                     font: font,
-                    size: 50,
-                    height: 5,
-                    bevelEnabled: true,
+                    size: 70,
                 });
 
                 var textMesh = new THREE.Mesh(textGeom, textMaterial[8]);
                 textMesh.rotation.y = 1.5;
-                textMesh.position.z = 150;
+                textMesh.position.z = 170;
                 textMesh.position.x = -600;
                 textMesh.name = "skybox-v2";
                 scene.add(textMesh);
             });
-
-            
-        
         }
 
-        function onMouseMove(event) {
+        function onMouseClick(event) {
                 event.preventDefault();
                 mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
                 mouse.y = - (event.clientY / window.innerHeight) * 2 + 1; 
@@ -293,7 +315,12 @@ Skybox v2`;
                 var intersects = raycaster.intersectObjects(scene.children, true);
                 
                 for(var i = 0; i < intersects.length; i++){
-                    if(intersects[i].object && intersects[i].object.name !== "plane"){
+                    if(intersects[i].object.name === "dome_low__0"){
+                        toogleLight();
+                        return;
+                    }
+
+                    if(intersects[i].object && intersects[i].object.name !== "plane" && intersects[i].object.name !== ""  && intersects[i].object.name !== "dome_low__0"){
                         if(this.click) {
                             let name = intersects[i].object.name;
                             window.location.pathname = "/" + name;
@@ -302,37 +329,105 @@ Skybox v2`;
                 }
         }
 
+        function onKeyPress(event){
+            event.preventDefault();
+
+            if(event.key === "w"){
+                bb8.position.x += 3;
+                if(bb8.rotation.z >= 1.45 && bb8.rotation.z <= 1.55){
+                    this.lastKey = event.key;
+                }
+                else {
+                    if(this.lastKey === "a"){
+                        bb8.rotateZ(-0.1);
+                    } else {
+                        bb8.rotateZ(0.1);
+                    }
+                }
+            }
+
+            if(event.key === "a"){
+                bb8.position.z -= 3;
+                if(bb8.rotation.z >= 2.95 && bb8.rotation.z <= 3.05){
+                    this.lastKey = event.key;
+                }
+                else {
+                    if(this.lastKey === "s"){
+                        bb8.rotateZ(-0.1);
+                    } else {
+                        bb8.rotateZ(0.1);
+                    }
+                }
+            }
+
+            if(event.key === "d"){
+                bb8.position.z += 3;
+                if(bb8.rotation.z >= -0.01 && bb8.rotation.z <= 0.06){
+                    this.lastKey = event.key;
+                }
+                else {
+                    if(this.lastKey === "w"){
+                        bb8.rotateZ(-0.1);
+                    } else {
+                        bb8.rotateZ(0.1);
+                    }
+                }
+            }
+
+            if(event.key === "s"){
+                bb8.position.x -= 3;
+                if(bb8.rotation.z >= -1.41 && bb8.rotation.z <= -1.25){
+                    this.lastKey = event.key;
+                }
+                else {
+                    if(this.lastKey === "d"){
+                        bb8.rotateZ(-0.1);
+                    } else {
+                        bb8.rotateZ(0.1);
+                    }
+                }
+            }
+        }
+        
         function toogleLight(){
             this.click = !this.click;
 
             let btn = document.getElementById("light");
             if(this.click){
                 this.plight = new THREE.PointLight(0xc4c4c4, 1);
-                this.plight.position.set(0,300,500);
+                this.plight.position.set(0,300,700);
                 scene.add(this.plight);
 
                 this.plight2 = new THREE.PointLight(0xc4c4c4, 1);
-                this.plight2.position.set(500,100,0);
+                this.plight2.position.set(700,100,0);
                 scene.add(this.plight2);
 
                 this.plight3 = new THREE.PointLight(0xc4c4c4, 1);
-                this.plight3.position.set(0,100,-500);
+                this.plight3.position.set(0,100,-700);
                 scene.add(this.plight3);
 
                 this.plight4 = new THREE.PointLight(0xc4c4c4, 1);
-                this.plight4.position.set(-500,300,0);
+                this.plight4.position.set(-700,300,0);
                 scene.add(this.plight4);
 
                 scene.remove(this.light);
-                btn.innerHTML = "Light Off !"
             } else {
                 scene.add(this.light);
                 scene.remove(plight);
                 scene.remove(plight2);
                 scene.remove(plight3);
                 scene.remove(plight4);
-                btn.innerHTML = "Light On !"
             }
+        }
+
+        function displayProject(){
+            let menu = document.getElementsByClassName("menu")[0];
+            let style = menu.style.display;
+
+            if(style === "flex")
+                menu.style.display = "none";
+            else
+                menu.style.display = "flex";
         }
 
         function render() {
@@ -341,6 +436,17 @@ Skybox v2`;
 
         function animate(){
             render();
+
+            if(camera.quaternion._y !== this.lastY){
+                if(bb8) {
+                    //bb8.lookAt(-camera.quaternion._x, -camera.quaternion._y, -camera.quaternion._z);
+                    if(Math.sign(camera.quaternion._y))
+                        bb8.rotateZ(-camera.quaternion._y / 30);
+                    else 
+                        bb8.rotateZ(camera.quaternion._y / 30);
+                }
+                this.lastY = camera.quaternion._y;
+            }
             requestAnimationFrame(animate);
         }
 
