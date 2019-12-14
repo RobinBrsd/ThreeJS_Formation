@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <p class="tips"> Tips : Find the light ! </p>
     <h1 id="loader"> Loading ... </h1>
 
     <div class="touch">
@@ -61,15 +60,6 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            var manager = new THREE.LoadingManager();
-            manager.onLoad = function ( ) {
-                setTimeout(() => {
-                    let loading = document.getElementById("loader");
-                loading.style.display = "none";
-                }, 1000);
-            };
-            manager.onLoad();
-
             window.addEventListener('resize', () => {
                 renderer.setSize(window.innerWidth,window.innerHeight);
                 camera.aspect = window.innerWidth / window.innerHeight;
@@ -121,6 +111,19 @@
                 scene.add(lightModel);
             });
         
+            var manager = new THREE.LoadingManager();
+            manager.onLoad = function ( ) {
+                setTimeout(() => {
+                    let loading = document.getElementById("loader");
+                    loading.style.display = "none";
+                    let tips = document.createElement("p");
+                    tips.innerHTML = "Tips : Find the light !";
+                    tips.className = "tips";
+                    document.body.appendChild(tips);
+                }, 1000);
+            };
+            manager.onLoad();
+            
             generateText();
             animate();
         }
@@ -331,11 +334,12 @@ Skybox v2`;
 
         function onKeyPress(event){
             event.preventDefault();
+            let key = event.key;
 
-            if(event.key === "w"){
+            if(key === "w" || key === "z"){
                 bb8.position.x += 3;
                 if(bb8.rotation.z >= 1.45 && bb8.rotation.z <= 1.55){
-                    this.lastKey = event.key;
+                    this.lastKey = key;
                 }
                 else {
                     if(this.lastKey === "a"){
@@ -346,10 +350,10 @@ Skybox v2`;
                 }
             }
 
-            if(event.key === "a"){
+            if(key === "a" || key === "q"){
                 bb8.position.z -= 3;
                 if(bb8.rotation.z >= 2.95 && bb8.rotation.z <= 3.05){
-                    this.lastKey = event.key;
+                    this.lastKey = key;
                 }
                 else {
                     if(this.lastKey === "s"){
@@ -360,10 +364,10 @@ Skybox v2`;
                 }
             }
 
-            if(event.key === "d"){
+            if(key === "d"){
                 bb8.position.z += 3;
                 if(bb8.rotation.z >= -0.01 && bb8.rotation.z <= 0.06){
-                    this.lastKey = event.key;
+                    this.lastKey = key;
                 }
                 else {
                     if(this.lastKey === "w"){
@@ -374,10 +378,10 @@ Skybox v2`;
                 }
             }
 
-            if(event.key === "s"){
+            if(key === "s"){
                 bb8.position.x -= 3;
                 if(bb8.rotation.z >= -1.41 && bb8.rotation.z <= -1.25){
-                    this.lastKey = event.key;
+                    this.lastKey = key;
                 }
                 else {
                     if(this.lastKey === "d"){
